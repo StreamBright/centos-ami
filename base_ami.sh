@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 
 # Run from a CentOS or RHEL instance on AWS with a secondary 8GB EBS volume
@@ -7,6 +7,8 @@ set -o errexit -o nounset -o pipefail
 # When complete, convert the $DEVICE into an AMI by creating a snapshot of the
 # EBS volume and converting the snapshot into an AMI.  These steps can be done
 # with the AWS web console or using the CLI tools.
+
+DEVICE=$1
 
 : ${DEVICE:?"ERROR: DEVICE must be set"}
 

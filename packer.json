@@ -1,0 +1,41 @@
+{
+  "min_packer_version": "0.12.3",
+  "variables": { },
+  "builders": [{
+    "type": "amazon-ebs",
+    "communicator": "ssh",
+    "ssh_pty": true,
+    "region": "eu-central-1",
+    "source_ami": "ami-572cfc38",
+    "instance_type": "m4.large",
+    "ssh_username": "centos",
+    "ami_name": "centos7.3-2017-04-03",
+    "ami_description": "CentOS 7.3 Image",
+    "ami_regions": [
+      "eu-central-1"
+    ],
+    "ebs_optimized": true,
+    "enhanced_networking": true,
+    "ami_block_device_mappings": [ ],
+    "tags": {
+    },
+    "ami_groups": [
+      "all"
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "scripts/install.sh",
+      "destination": "install.sh"
+    },
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -e",
+      "inline": [
+        "sudo chmod 0755 install.sh",
+        "sudo install.sh"
+      ]
+    }
+  ]
+}
