@@ -1,40 +1,65 @@
 {
-  "min_packer_version": "0.12.3",
-  "variables": { },
+  "variables": {
+    "vpc": "{{env `BUILD_VPC_ID`}}",
+    "subnet": "{{env `BUILD_SUBNET_ID`}}",
+    "aws_region": "{{env `AWS_REGION`}}",
+    "ami_name": "your favorite AMI-{{isotime \"02-Jan-06 03_04_05\"}}"
+  },
   "builders": [{
+    "name": "AWS AMI Builder",
     "type": "amazon-ebs",
-    "communicator": "ssh",
-    "ssh_pty": true,
-    "region": "eu-central-1",
-    "source_ami": "ami-572cfc38",
-    "instance_type": "m4.large",
-    "ssh_username": "centos",
-    "ami_name": "centos7.3-2017-04-03",
-    "ami_description": "CentOS 7.3 Image",
-    "ami_regions": [
-      "eu-central-1"
-    ],
-    "ebs_optimized": true,
-    "enhanced_networking": true,
-    "ami_block_device_mappings": [ ],
-    "tags": {
+    "region": "{{user `aws_region`}}",
+    "source_ami_filter": {
+        "filters": {
+            "virtualization-type": "hvm",
+            "name": "amzn-ami*-ebs",
+            "root-device-type": "ebs"
+        },
+        "owners": ["137112412989", "591542846629", "801119661308",
+                   "102837901569", "013907871322", "206029621532",
+                   "286198878708", "443319210888"],
+        "most_recent": true
     },
-    "ami_groups": [
-      "all"
-    ]
+    "instance_type": "t2.micro",
+    "ssh_username": "ec2-user",
+    "ami_name": "{{user `ami_name` | clean_ami_name}}",
+    "tags": {
+      "Name": "{{user `ami_name`}}"
+    },
+    "run_tags": {
+      "Name": "{{user `ami_name`}}"
+    },
+    "run_volume_tags": {
+      "Name": "{{user `ami_name`}}"
+    },
+    "snapshot_tags": {
+      "Name": "{{user `ami_name`}}"
+    },
+    "ami_description": "AWS AMI",
+    "associate_public_ip_address": "true",
+    "vpc_id": "{{user `vpc`}}",
+    "subnet_id": "{{user `subnet`}}"
   }],
   "provisioners": [
     {
-      "type": "file",
-      "source": "scripts/install.sh",
-      "destination": "install.sh"
+        "type": "shell",
+        "inline": [
+            "sudo pip install ansible"
+        ]
+    },
+    {
+        "type": "ansible-local",
+        "playbook_file": "ansible/playbook.yaml",
+        "role_paths": [
+            "ansible/roles/common"
+        ],
+        "playbook_dir": "ansible",
+        "galaxy_file": "ansible/requirements.yaml"
     },
     {
       "type": "shell",
-      "inline_shebang": "/bin/bash -e",
       "inline": [
-        "sudo chmod 0755 install.sh",
-        "sudo install.sh"
+        "rm .ssh/authorized_keys ; sudo rm /root/.ssh/authorized_keys"
       ]
     }
   ]
